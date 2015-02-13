@@ -30,7 +30,7 @@
 
 @implementation GameScene
 bool enableGravityChange, timerStarted;
-NSMutableArray *boxesArray;
+NSMutableArray *boxesArray, *boxesPosArray;
 NSString *levelToLoad=@"stage001";
 CGRect gameRectangle;
 NSInteger boxesTotal, boxesCleared;
@@ -227,7 +227,7 @@ CFTimeInterval timeCount;
     obj.yScale = obj.xScale;
     obj.position=CGPointMake(gameRectangle.origin.x+col*taxax+taxax/2, gameRectangle.origin.y-lin*taxay-taxay/2);
     obj.physicsBody=[SKPhysicsBody bodyWithRectangleOfSize:obj.size];
-    
+    [boxesPosArray addObject:[NSValue valueWithCGPoint:obj.position]];
     [self addChild:obj];
 }
 
