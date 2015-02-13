@@ -29,25 +29,33 @@
 @end
 
 @implementation GameScene
+
+static const uint32_t boxCategory = 0x1 << 1;
+static const uint32_t exitCategory = 0x1 << 0;
+static const uint32_t wallCategory = 0x1 << 2;
+
 bool enableGravityChange, timerStarted;
 NSMutableArray *boxesArray, *boxesPosArray;
 NSString *levelToLoad=@"stage001";
 CGRect gameRectangle;
 NSInteger boxesTotal, boxesCleared;
 CFTimeInterval timeCount;
+SKSpriteNode *gameNode;
 
 -(void)didMoveToView:(SKView *)view {
     enableGravityChange=false;
     /* Setup your scene here */
+    [self setButtons];
+    
+}
+
+-(void)setLabel{
     SKLabelNode *myLabel = [SKLabelNode labelNodeWithFontNamed:@"Chalkduster"];
-    myLabel.text = @"Hello, World!";
+    myLabel.text = @"You got it";
     myLabel.fontSize = 65;
     myLabel.position = CGPointMake(CGRectGetMidX(self.frame),
                                    CGRectGetMidY(self.frame));
-    
-    //[self addChild:myLabel];
-    [self setButtons];
-    
+    [self addChild:myLabel];
 }
 
 -(void)setButtons{
@@ -74,11 +82,30 @@ CFTimeInterval timeCount;
     [self changeGravity:-1];
 }
 
--(void)changeGravity:(NSInteger)direction{
+-(void)changeGravity2:(NSInteger)direction{
     if(enableGravityChange){
         enableGravityChange=false;
         self.physicsWorld.gravity=CGVectorMake(self.physicsWorld.gravity.dy*direction, -self.physicsWorld.gravity.dx*direction);
     }
+}
+
+-(void)changeGravity:(NSInteger)direction{
+    if(enableGravityChange){
+        enableGravityChange=false;
+        for(SKSpriteNode *box in boxesArray){
+            box.physicsBody.dynamic=false;
+        }
+        [gameNode runAction:[SKAction rotateByAngle:direction*M_PI/2 duration:0.5f] completion:^{
+            for(SKSpriteNode *box in boxesArray){
+                box.physicsBody.dynamic=true;
+            }
+        }];
+    }
+}
+
+-(void)didBeginContact:(SKPhysicsContact *)contact{
+    NSLog(@"HUE");
+    [self setLabel];
 }
 
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -123,7 +150,16 @@ CFTimeInterval timeCount;
     x=taxax*quantX;
     y=taxay*quantY;
     
-    gameRectangle = CGRectMake(self.frame.size.width/2-x/2, self.frame.size.height/2+y/2, x, y);
+    gameRectangle = CGRectMake(self.frame.size.width/2-x/2, self.frame.size.height/2-y/2, x, y);
+    
+    
+    //gameNode = [[SKSpriteNode alloc]initWithColor:[SKColor blueColor] size:gameRectangle.size];
+    //gameNode = [[SKSpriteNode alloc]initWithColor:[SKColor blueColor] size:gameRectangle.size];
+    gameNode = [SKSpriteNode spriteNodeWithImageNamed:@"crateBack"];
+    [gameNode setSize:gameRectangle.size];
+    
+    gameNode.position=CGPointMake(self.frame.size.width/2,self.frame.size.height/2);
+    //gameNode.position=gameRectangle.origin;
     
     //Here we load the elements of the stage - walls only until now
     [self readWalls:arq taxax:taxax taxay:taxay];
@@ -132,6 +168,10 @@ CFTimeInterval timeCount;
     boxesArray = [[NSMutableArray alloc] initWithCapacity:2];
     [self readBoxes:arq taxax:taxax taxay:taxay];
     
+    //Here we load the exits
+    [self readExits:arq taxax:taxax taxay:taxay];
+    
+    [self addChild:gameNode];
     fclose(arq);
 }
 
@@ -155,7 +195,9 @@ CFTimeInterval timeCount;
            taxax:(float)taxax
            taxay:(float)taxay{
     
-    CGPoint pos = CGPointMake(gameRectangle.origin.x+col*taxax+taxax/2, gameRectangle.origin.y-lin*taxay-taxay/2);
+    //CGPoint pos = CGPointMake(gameRectangle.origin.x+col*taxax+taxax/2, gameRectangle.origin.y-lin*taxay-taxay/2);
+    //CGPoint pos = CGPointMake(col*taxax+taxax/2, gameNode.frame.size.height-lin*taxay-taxay/2);
+    CGPoint pos = CGPointMake(col*taxax+taxax/2-gameNode.frame.size.width/2, gameNode.frame.size.height/2-lin*taxay-taxay/2);
     CGFloat angle;
     switch(type){
         case 0:{
@@ -180,7 +222,6 @@ CFTimeInterval timeCount;
         }
         default: return;
     }
-    NSLog(@"WALL PUT");
     SKSpriteNode *obj=[SKSpriteNode spriteNodeWithTexture:[SKTexture textureWithImageNamed:@"mirror"]];
     obj.zRotation=angle*M_PI;
     obj.zPosition=5;
@@ -189,7 +230,9 @@ CFTimeInterval timeCount;
     obj.position=pos;
     obj.physicsBody=[SKPhysicsBody bodyWithRectangleOfSize:obj.size];
     obj.physicsBody.dynamic=false;
-    [self addChild:obj];
+    obj.physicsBody.categoryBitMask=wallCategory;
+    //[self addChild:obj];
+    [gameNode addChild:obj];
     
 }
 
@@ -225,10 +268,48 @@ CFTimeInterval timeCount;
     obj.zPosition=5;
     obj.xScale = 0.75*taxax/obj.size.width;
     obj.yScale = obj.xScale;
-    obj.position=CGPointMake(gameRectangle.origin.x+col*taxax+taxax/2, gameRectangle.origin.y-lin*taxay-taxay/2);
+    //obj.position=CGPointMake(gameRectangle.origin.x+col*taxax+taxax/2, gameRectangle.origin.y-lin*taxay-taxay/2);
+    //obj.position=CGPointMake(col*taxax+taxax/2, gameNode.frame.size.height-lin*taxay-taxay/2);
+    obj.position=CGPointMake(col*taxax+taxax/2-gameNode.frame.size.width/2, gameNode.frame.size.height/2-lin*taxay-taxay/2);
     obj.physicsBody=[SKPhysicsBody bodyWithRectangleOfSize:obj.size];
+    obj.physicsBody.mass=1000;
+    obj.physicsBody.categoryBitMask=boxCategory;
+    obj.physicsBody.collisionBitMask=wallCategory|boxCategory;
+    obj.physicsBody.contactTestBitMask=exitCategory;
+    
+    [boxesArray addObject:obj];
     [boxesPosArray addObject:[NSValue valueWithCGPoint:obj.position]];
-    [self addChild:obj];
+    //[self addChild:obj];
+    [gameNode addChild:obj];
+}
+
+-(void)readExits:(FILE*)arq
+           taxax:(float)taxax
+           taxay:(float)taxay{
+    
+    NSInteger quant, lin, col, type;
+    fscanf(arq, "%d", &quant);
+    for(NSInteger i=0;i<quant;i++){
+        fscanf(arq,"%d%d%d", &type, &lin, &col);
+        [self placeExit:type lin:lin col:col taxax:taxax taxay:taxay];
+    }
+    
+}
+
+-(void)placeExit:(NSInteger)type
+            lin:(NSInteger)lin
+            col:(NSInteger)col
+          taxax:(float)taxax
+          taxay:(float)taxay{
+    SKSpriteNode *obj = [SKSpriteNode spriteNodeWithColor:[SKColor blackColor] size:CGSizeMake(taxax,taxay)];
+    obj.zPosition=3;
+    NSLog(@"lin -> %d col -> %d", lin, col);
+    obj.position=CGPointMake(col*taxax+taxax/2-gameNode.frame.size.width/2, gameNode.frame.size.height/2-lin*taxay-taxay/2);
+    obj.physicsBody=[SKPhysicsBody bodyWithRectangleOfSize:obj.size];
+    obj.physicsBody.dynamic=false;
+    obj.physicsBody.categoryBitMask=exitCategory;
+    obj.physicsBody.collisionBitMask=0;
+    [gameNode addChild:obj];
 }
 
 -(void)update:(CFTimeInterval)currentTime {
