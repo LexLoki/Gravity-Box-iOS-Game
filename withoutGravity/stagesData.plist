@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<array>
+		<dict>
+			<key>status</key>
+			<integer>0</integer>
+			<key>filename</key>
+			<string>&quot;stage001&quot;</string>
+		</dict>
+		<dict>
+			<key>status</key>
+			<integer>0</integer>
+			<key>filename</key>
+			<string>&quot;stage001&quot;</string>
+		</dict>
+		<dict>
+			<key>status</key>
+			<integer>0</integer>
+			<key>filename</key>
+			<string>&quot;stage001&quot;</string>
+		</dict>
+		<dict>
+			<key>status</key>
+			<integer>0</integer>
+			<key>filename</key>
+			<string>&quot;stage001&quot;</string>
+		</dict>
+		<dict>
+			<key>status</key>
+			<integer>0</integer>
+			<key>filename</key>
+			<string>&quot;stage001&quot;</string>
+		</dict>
+	</array>
+</array>
+</plist>

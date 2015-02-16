@@ -26,6 +26,7 @@
 @interface GameScene()
 @property (nonatomic) UIButton *leftGravity;
 @property (nonatomic) UIButton *rightGravity;
+@property (nonatomic) UIButton *resetButton;
 @end
 
 @implementation GameScene
@@ -41,6 +42,7 @@ CGRect gameRectangle;
 NSInteger boxesTotal, boxesCleared;
 CFTimeInterval timeCount;
 SKSpriteNode *gameNode;
+NSInteger moveCount;
 
 -(void)didMoveToView:(SKView *)view {
     enableGravityChange=false;
@@ -55,6 +57,7 @@ SKSpriteNode *gameNode;
     myLabel.fontSize = 65;
     myLabel.position = CGPointMake(CGRectGetMidX(self.frame),
                                    CGRectGetMidY(self.frame));
+    myLabel.zPosition=10;
     [self addChild:myLabel];
 }
 
@@ -69,6 +72,13 @@ SKSpriteNode *gameNode;
     [self.rightGravity setBackgroundImage:[UIImage imageNamed:@"rightArrow"] forState:UIControlStateNormal];
     [self.rightGravity addTarget:self action:@selector(gravityAntiClockWise) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.rightGravity];
+    //Reset button definition
+    self.resetButton = [[UIButton alloc] initWithFrame:CGRectMake(0.9*self.frame.size.width, 0, 0.1*self.frame.size.width, 0.1*self.frame.size.height)];
+    [self.resetButton setBackgroundImage:[UIImage imageNamed:@"resetArrow"] forState:UIControlStateNormal];
+    [self.resetButton addTarget:self action:@selector(resetBoxes) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:self.resetButton];
+    
+    self.physicsWorld.contactDelegate=self;
     [self makeScenario];
     timerStarted=false;
     enableGravityChange=true;
@@ -165,7 +175,8 @@ SKSpriteNode *gameNode;
     [self readWalls:arq taxax:taxax taxay:taxay];
     
     //Here we load the boxes
-    boxesArray = [[NSMutableArray alloc] initWithCapacity:2];
+    boxesArray = [[NSMutableArray alloc] initWithCapacity:5];
+    boxesPosArray = [[NSMutableArray alloc] initWithCapacity:5];
     [self readBoxes:arq taxax:taxax taxay:taxay];
     
     //Here we load the exits
@@ -310,6 +321,20 @@ SKSpriteNode *gameNode;
     obj.physicsBody.categoryBitMask=exitCategory;
     obj.physicsBody.collisionBitMask=0;
     [gameNode addChild:obj];
+}
+
+-(void)resetBoxes{
+    NSInteger quant = boxesArray.count;
+    for(NSInteger i=0;i<quant;i++)
+        [boxesArray[i] removeFromParent];
+    [gameNode runAction:[SKAction rotateToAngle:0 duration:0.5f] completion:^{
+        for(NSInteger i=0;i<quant;i++){
+            SKSpriteNode *box = [boxesArray objectAtIndex:i];
+            box.physicsBody.velocity=CGVectorMake(0,0);
+            box.position=[boxesPosArray[i] CGPointValue];
+            [gameNode addChild:box];
+        }
+    }];
 }
 
 -(void)update:(CFTimeInterval)currentTime {
