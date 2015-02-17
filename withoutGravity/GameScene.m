@@ -337,6 +337,22 @@ NSInteger moveCount;
     }];
 }
 
+-(void)setMenu{
+    
+}
+
+-(void)menuBeginSelection:(NSSet*)touches{
+    
+}
+
+-(void)menuMovedSelection:(NSSet*)touches{
+    
+}
+
+-(void)menuEndedSelection:(NSSet*)touches{
+    
+}
+
 -(void)update:(CFTimeInterval)currentTime {
     /* Called before each frame is rendered */
     if(!enableGravityChange){
