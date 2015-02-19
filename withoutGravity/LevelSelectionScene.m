@@ -20,6 +20,19 @@ NSMutableArray *status, *requisites;
     
 }
 
+-(void)setSelection{
+    NSInteger quant=status.count, i, div=5;
+    CGPoint origin = CGPointMake(self.frame.size.width*0.1, self.frame.size.height*0.1);
+    for(i=0;i<quant;i++){
+        SKSpriteNode *node = [SKSpriteNode spriteNodeWithImageNamed:@"INSERT"]; //A INSERIR
+        node.xScale = self.frame.size.width/5/node.size.width;
+        node.yScale = node.xScale;
+        node.position =CGPointMake((i%div)*node.size.width+origin.x,(i/div)*node.size.height+origin.y); //INSERIR LOCAL
+        //HERE ADD AND ETC
+        //DEVIDE IF WE WILL HAVE A PARENT NODE TO HOLD LEVELS (PRETTY MUCH UNLIKELY)
+    }
+}
+
 -(NSMutableArray*)loadStatus:(int)map{
     
     NSString *plistPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
