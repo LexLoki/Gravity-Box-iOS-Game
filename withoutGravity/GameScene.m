@@ -35,9 +35,11 @@ static const uint32_t boxCategory = 0x1 << 1;
 static const uint32_t exitCategory = 0x1 << 0;
 static const uint32_t wallCategory = 0x1 << 2;
 
+float masterSoundVolume, masterMusicVolume;
 bool enableGravityChange, timerStarted;
 NSMutableArray *boxesArray, *boxesPosArray;
 NSString *levelToLoad=@"stage001";
+NSInteger actualStage, actualMap;
 CGRect gameRectangle;
 NSInteger boxesTotal, boxesCleared;
 CFTimeInterval timeCount;
@@ -122,17 +124,6 @@ NSInteger moveCount;
     /* Called when a touch begins */
     for (UITouch *touch in touches) {
         CGPoint location = [touch locationInNode:self];
-        SKSpriteNode *sprite = [SKSpriteNode spriteNodeWithImageNamed:@"Spaceship"];
-        
-        sprite.xScale = 0.5;
-        sprite.yScale = 0.5;
-        sprite.position = location;
-        SKAction *action = [SKAction rotateByAngle:M_PI duration:1];
-        sprite.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:sprite.size];
-        
-        [sprite runAction:[SKAction repeatActionForever:action]];
-        
-        [self addChild:sprite];
     }
 }
 
@@ -353,6 +344,23 @@ NSInteger moveCount;
     
 }
 
+-(void)endStage{
+    //Por enquanto simplesmente 0 indisponivel, 1 disponivel, 2 passado.
+    //Ao passar uma fase na qual o status nao é 2, atualizamos o status dela e o da proxima (caso nao seja a ultima)
+    NSString *plistPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject];
+    plistPath = [plistPath stringByAppendingPathComponent:@"stagesData.plist"];
+    NSMutableArray *contentArray = [[NSMutableArray alloc] initWithContentsOfFile:plistPath];
+    //setScore here
+    NSMutableArray *mapData = [contentArray objectAtIndex:actualMap];
+    //[(NSMutableDictionary*)[[contentArray objectAtIndex:actualMap] objectAtIndex:actualStage] setObject:[NSNumber numberWithInt:2] forKey:@"status"];
+    if([[mapData[actualStage] objectForKey:@"status"] integerValue]!=2){ //ampliar complexidade com score
+        [mapData[actualStage] setObject:[NSNumber numberWithInt:2] forKey:@"status"];
+        if(actualStage!=mapData.count) //setar proxima para disponivel
+            [mapData[actualStage+1] setObject:[NSNumber numberWithInt:1] forKey:@"status"];
+        [contentArray writeToFile:plistPath atomically:YES];
+    }
+}
+
 -(void)update:(CFTimeInterval)currentTime {
     /* Called before each frame is rendered */
     if(!enableGravityChange){
@@ -367,6 +375,21 @@ NSInteger moveCount;
             }
         }
     }
+}
+
+-(void) setLevelToLoad : (NSString *) levelFileName map : (int) cMap stage : (int) cStage{
+    levelToLoad=levelFileName;
+    actualStage=cStage;
+    actualMap=cMap;
+    
+}
+-(void) setLevelVolumeSound : (float) targetSound music : (float) targetMusic{
+    masterSoundVolume=targetSound;
+    masterMusicVolume=targetMusic;
+}
+
+-(void)willMoveFromView:(SKView *)view{
+    [self removeAllChildren];
 }
 
 @end

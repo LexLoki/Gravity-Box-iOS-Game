@@ -10,4 +10,8 @@
 
 @interface GameScene : SKScene <SKPhysicsContactDelegate>
 
+//Use this method to set next Level to load
+-(void) setLevelToLoad : (NSString *) levelFileName map : (int) cMap stage : (int) cStage;
+-(void) setLevelVolumeSound : (float) targetSound music : (float) targetMusic;
+
 @end
