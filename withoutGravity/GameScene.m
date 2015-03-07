@@ -64,19 +64,25 @@ NSInteger moveCount;
 }
 
 -(void)setButtons{
+    
+    SKSpriteNode *background = [SKSpriteNode spriteNodeWithImageNamed:@"Background"];
+    [background setSize:self.frame.size];
+    background.position = CGPointMake(self.frame.size.width*0.5, self.frame.size.height*0.5);
+    [self addChild:background];
+    
     //Left button definition
     self.leftGravity = [[UIButton alloc] initWithFrame:CGRectMake(0,0.9*self.frame.size.height,0.1*self.frame.size.width, 0.1*self.frame.size.height)];
-    [self.leftGravity setBackgroundImage:[UIImage imageNamed:@"leftArrow"] forState:UIControlStateNormal];
+    [self.leftGravity setBackgroundImage:[UIImage imageNamed:@"left"] forState:UIControlStateNormal];
     [self.leftGravity addTarget:self action:@selector(gravityClockWise) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.leftGravity];
     //Right button definition
     self.rightGravity = [[UIButton alloc] initWithFrame:CGRectMake(0.9*self.frame.size.width,0.9*self.frame.size.height,0.1*self.frame.size.width, 0.1*self.frame.size.height)];
-    [self.rightGravity setBackgroundImage:[UIImage imageNamed:@"rightArrow"] forState:UIControlStateNormal];
+    [self.rightGravity setBackgroundImage:[UIImage imageNamed:@"right"] forState:UIControlStateNormal];
     [self.rightGravity addTarget:self action:@selector(gravityAntiClockWise) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.rightGravity];
     //Reset button definition
     self.resetButton = [[UIButton alloc] initWithFrame:CGRectMake(0.9*self.frame.size.width, 0, 0.1*self.frame.size.width, 0.1*self.frame.size.height)];
-    [self.resetButton setBackgroundImage:[UIImage imageNamed:@"resetArrow"] forState:UIControlStateNormal];
+    [self.resetButton setBackgroundImage:[UIImage imageNamed:@"reload"] forState:UIControlStateNormal];
     [self.resetButton addTarget:self action:@selector(resetBoxes) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.resetButton];
     
@@ -123,7 +129,7 @@ NSInteger moveCount;
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     /* Called when a touch begins */
     for (UITouch *touch in touches) {
-        CGPoint location = [touch locationInNode:self];
+        //CGPoint location = [touch locationInNode:self];
     }
 }
 
@@ -140,7 +146,7 @@ NSInteger moveCount;
         return;
     }
     
-    fscanf(arq,"%d%d",&quantX, &quantY);
+    fscanf(arq,"%ld%ld",&quantX, &quantY);
     taxax=0.8*self.frame.size.width/quantX;
     taxay=0.8*self.frame.size.height/quantY;
     if(taxax<taxay)
@@ -156,7 +162,8 @@ NSInteger moveCount;
     
     //gameNode = [[SKSpriteNode alloc]initWithColor:[SKColor blueColor] size:gameRectangle.size];
     //gameNode = [[SKSpriteNode alloc]initWithColor:[SKColor blueColor] size:gameRectangle.size];
-    gameNode = [SKSpriteNode spriteNodeWithImageNamed:@"crateBack"];
+    //gameNode = [SKSpriteNode spriteNodeWithImageNamed:@"crateBack"];
+    gameNode = [SKSpriteNode node];
     [gameNode setSize:gameRectangle.size];
     
     gameNode.position=CGPointMake(self.frame.size.width/2,self.frame.size.height/2);
@@ -181,11 +188,11 @@ NSInteger moveCount;
            taxax:(float)taxax
            taxay:(float)taxay{
     NSInteger lin, col, total, j, angle, quant;
-    fscanf(arq, "%d", &quant);
+    fscanf(arq, "%ld", &quant);
     for(NSInteger i=0;i<quant;i++){
-        fscanf(arq, "%d%d%d", &lin, &col, &total);
+        fscanf(arq, "%ld%ld%ld", &lin, &col, &total);
         for(j=0;j<total;j++){
-            fscanf(arq, "%d", &angle);
+            fscanf(arq, "%ld", &angle);
             [self placeWall:angle lin:lin col:col taxax:taxax taxay:taxay];
         }
     }
@@ -224,7 +231,7 @@ NSInteger moveCount;
         }
         default: return;
     }
-    SKSpriteNode *obj=[SKSpriteNode spriteNodeWithTexture:[SKTexture textureWithImageNamed:@"mirror"]];
+    SKSpriteNode *obj=[SKSpriteNode spriteNodeWithTexture:[SKTexture textureWithImageNamed:@"bar"]];
     obj.zRotation=angle*M_PI;
     obj.zPosition=5;
     obj.xScale = taxax/obj.size.width;
@@ -243,9 +250,9 @@ NSInteger moveCount;
            taxay:(float)taxay{
 
     NSInteger quant, lin, col, type;
-    fscanf(arq, "%d", &quant);
+    fscanf(arq, "%ld", &quant);
     for(NSInteger i=0;i<quant;i++){
-        fscanf(arq,"%d%d%d", &type, &lin, &col);
+        fscanf(arq,"%ld%ld%ld", &type, &lin, &col);
         [self placeBox:type lin:lin col:col taxax:taxax taxay:taxay];
     }
     
@@ -266,14 +273,15 @@ NSInteger moveCount;
             break;
         }
     }
-    SKSpriteNode *obj=[SKSpriteNode spriteNodeWithTexture:[SKTexture textureWithImageNamed:@"boxcolor"]];
+    SKSpriteNode *obj=[SKSpriteNode spriteNodeWithTexture:[SKTexture textureWithImageNamed:@"cubegame"]];
     obj.zPosition=5;
     obj.xScale = 0.75*taxax/obj.size.width;
     obj.yScale = obj.xScale;
     //obj.position=CGPointMake(gameRectangle.origin.x+col*taxax+taxax/2, gameRectangle.origin.y-lin*taxay-taxay/2);
     //obj.position=CGPointMake(col*taxax+taxax/2, gameNode.frame.size.height-lin*taxay-taxay/2);
     obj.position=CGPointMake(col*taxax+taxax/2-gameNode.frame.size.width/2, gameNode.frame.size.height/2-lin*taxay-taxay/2);
-    obj.physicsBody=[SKPhysicsBody bodyWithRectangleOfSize:obj.size];
+    //obj.physicsBody=[SKPhysicsBody bodyWithRectangleOfSize:obj.size];
+    obj.physicsBody=[SKPhysicsBody bodyWithTexture:obj.texture size:obj.size];
     obj.physicsBody.mass=1000;
     obj.physicsBody.categoryBitMask=boxCategory;
     obj.physicsBody.collisionBitMask=wallCategory|boxCategory;
@@ -290,9 +298,9 @@ NSInteger moveCount;
            taxay:(float)taxay{
     
     NSInteger quant, lin, col, type;
-    fscanf(arq, "%d", &quant);
+    fscanf(arq, "%ld", &quant);
     for(NSInteger i=0;i<quant;i++){
-        fscanf(arq,"%d%d%d", &type, &lin, &col);
+        fscanf(arq,"%ld%ld%ld", &type, &lin, &col);
         [self placeExit:type lin:lin col:col taxax:taxax taxay:taxay];
     }
     
@@ -305,7 +313,7 @@ NSInteger moveCount;
           taxay:(float)taxay{
     SKSpriteNode *obj = [SKSpriteNode spriteNodeWithColor:[SKColor blackColor] size:CGSizeMake(taxax,taxay)];
     obj.zPosition=3;
-    NSLog(@"lin -> %d col -> %d", lin, col);
+    NSLog(@"lin -> %ld col -> %ld", lin, col);
     obj.position=CGPointMake(col*taxax+taxax/2-gameNode.frame.size.width/2, gameNode.frame.size.height/2-lin*taxay-taxay/2);
     obj.physicsBody=[SKPhysicsBody bodyWithRectangleOfSize:obj.size];
     obj.physicsBody.dynamic=false;
@@ -322,6 +330,7 @@ NSInteger moveCount;
         for(NSInteger i=0;i<quant;i++){
             SKSpriteNode *box = [boxesArray objectAtIndex:i];
             box.physicsBody.velocity=CGVectorMake(0,0);
+            box.zRotation=0;
             box.position=[boxesPosArray[i] CGPointValue];
             [gameNode addChild:box];
         }
