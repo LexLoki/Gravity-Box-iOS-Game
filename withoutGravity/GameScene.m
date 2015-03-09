@@ -87,7 +87,7 @@ CGFloat barY;
     //Right button definition
     img = [UIImage imageNamed:@"right"];
     size = [self setSizeForImage:img toSize:target];
-    self.rightGravity = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width-margin.width-size.width,self.frame.size.height-margin.width-size.height,size.width, size.height)];
+    self.rightGravity = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width-margin.width-size.width,self.frame.size.height-margin.height-size.height,size.width, size.height)];
     [self.rightGravity setBackgroundImage:img forState:UIControlStateNormal];
     [self.rightGravity addTarget:self action:@selector(gravityAntiClockWise) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.rightGravity];
