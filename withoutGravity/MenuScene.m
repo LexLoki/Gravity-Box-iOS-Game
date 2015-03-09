@@ -12,6 +12,7 @@
 @implementation MenuScene
 
 SKSpriteNode *selectedNode;
+UIButton *button;
 
 -(void)didMoveToView:(SKView *)view{
     [self loadInterface];

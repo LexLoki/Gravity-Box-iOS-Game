@@ -46,6 +46,8 @@ CFTimeInterval timeCount;
 SKSpriteNode *gameNode;
 NSInteger moveCount;
 
+CGFloat barY;
+
 -(void)didMoveToView:(SKView *)view {
     enableGravityChange=false;
     /* Setup your scene here */
@@ -70,19 +72,30 @@ NSInteger moveCount;
     background.position = CGPointMake(self.frame.size.width*0.5, self.frame.size.height*0.5);
     [self addChild:background];
     
+    
+    CGSize size, target=CGSizeMake(0.1*self.frame.size.width, 0.1*self.frame.size.height);
+    CGSize margin = CGSizeMake(0.05*self.frame.size.width, 0.05*self.frame.size.height);
+    UIImage *img;
+    
     //Left button definition
-    self.leftGravity = [[UIButton alloc] initWithFrame:CGRectMake(0,0.9*self.frame.size.height,0.1*self.frame.size.width, 0.1*self.frame.size.height)];
-    [self.leftGravity setBackgroundImage:[UIImage imageNamed:@"left"] forState:UIControlStateNormal];
+    img = [UIImage imageNamed:@"left"];
+    size = [self setSizeForImage:img toSize:target];
+    self.leftGravity = [[UIButton alloc] initWithFrame:CGRectMake(margin.width,self.frame.size.height-margin.height-size.height,size.width, size.height)];
+    [self.leftGravity setBackgroundImage:img forState:UIControlStateNormal];
     [self.leftGravity addTarget:self action:@selector(gravityClockWise) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.leftGravity];
     //Right button definition
-    self.rightGravity = [[UIButton alloc] initWithFrame:CGRectMake(0.9*self.frame.size.width,0.9*self.frame.size.height,0.1*self.frame.size.width, 0.1*self.frame.size.height)];
-    [self.rightGravity setBackgroundImage:[UIImage imageNamed:@"right"] forState:UIControlStateNormal];
+    img = [UIImage imageNamed:@"right"];
+    size = [self setSizeForImage:img toSize:target];
+    self.rightGravity = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width-margin.width-size.width,self.frame.size.height-margin.width-size.height,size.width, size.height)];
+    [self.rightGravity setBackgroundImage:img forState:UIControlStateNormal];
     [self.rightGravity addTarget:self action:@selector(gravityAntiClockWise) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.rightGravity];
     //Reset button definition
-    self.resetButton = [[UIButton alloc] initWithFrame:CGRectMake(0.9*self.frame.size.width, 0, 0.1*self.frame.size.width, 0.1*self.frame.size.height)];
-    [self.resetButton setBackgroundImage:[UIImage imageNamed:@"reload"] forState:UIControlStateNormal];
+    img = [UIImage imageNamed:@"reload"];
+    size = [self setSizeForImage:img toSize:target];
+    self.resetButton = [[UIButton alloc] initWithFrame:CGRectMake(self.frame.size.width-margin.width-size.width, margin.height, size.width, size.height)];
+    [self.resetButton setBackgroundImage:img forState:UIControlStateNormal];
     [self.resetButton addTarget:self action:@selector(resetBoxes) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.resetButton];
     
@@ -90,6 +103,19 @@ NSInteger moveCount;
     [self makeScenario];
     timerStarted=false;
     enableGravityChange=true;
+}
+
+-(CGSize)setSizeForImage:(UIImage*)img toSize:(CGSize)target{
+    CGFloat x = target.width/img.size.width, y = target.height/img.size.height;
+    if(x>y){
+        x=img.size.width*y;
+        y=target.height;
+    }
+    else{
+        y=img.size.height*x;
+        x=target.width;
+    }
+    return CGSizeMake(x, y);
 }
 
 -(void)gravityClockWise{
@@ -156,6 +182,9 @@ NSInteger moveCount;
     
     x=taxax*quantX;
     y=taxay*quantY;
+    
+    SKTexture *bar = [SKTexture textureWithImageNamed:@"bar"];
+    barY = (taxax/bar.size.width)*bar.size.height;
     
     gameRectangle = CGRectMake(self.frame.size.width/2-x/2, self.frame.size.height/2-y/2, x, y);
     
@@ -275,7 +304,8 @@ NSInteger moveCount;
     }
     SKSpriteNode *obj=[SKSpriteNode spriteNodeWithTexture:[SKTexture textureWithImageNamed:@"cubegame"]];
     obj.zPosition=5;
-    obj.xScale = 0.75*taxax/obj.size.width;
+    //obj.xScale = 0.75*taxax/obj.size.width; //PRIMEIRO MODO
+    obj.xScale = (taxax-2*barY)/obj.size.width;  //SEGUNDO MODO, JUSTAPOSTO
     obj.yScale = obj.xScale;
     //obj.position=CGPointMake(gameRectangle.origin.x+col*taxax+taxax/2, gameRectangle.origin.y-lin*taxay-taxay/2);
     //obj.position=CGPointMake(col*taxax+taxax/2, gameNode.frame.size.height-lin*taxay-taxay/2);
@@ -322,11 +352,27 @@ NSInteger moveCount;
     [gameNode addChild:obj];
 }
 
--(void)resetBoxes{
+-(void)resetBoxes2{
     NSInteger quant = boxesArray.count;
     for(NSInteger i=0;i<quant;i++)
         [boxesArray[i] removeFromParent];
     [gameNode runAction:[SKAction rotateToAngle:0 duration:0.5f] completion:^{
+        for(NSInteger i=0;i<quant;i++){
+            SKSpriteNode *box = [boxesArray objectAtIndex:i];
+            box.physicsBody.velocity=CGVectorMake(0,0);
+            box.zRotation=0;
+            box.position=[boxesPosArray[i] CGPointValue];
+            [gameNode addChild:box];
+        }
+    }];
+}
+
+-(void)resetBoxes{
+    NSInteger quant = boxesArray.count;
+    for(NSInteger i=0;i<quant;i++)
+        [boxesArray[i] removeFromParent];
+    SKAction *effect = [SKAction sequence:@[[SKAction fadeOutWithDuration:0.1f],[SKAction rotateToAngle:0 duration:0.0f],[SKAction fadeInWithDuration:0.1f]]];
+    [gameNode runAction:effect completion:^{
         for(NSInteger i=0;i<quant;i++){
             SKSpriteNode *box = [boxesArray objectAtIndex:i];
             box.physicsBody.velocity=CGVectorMake(0,0);
