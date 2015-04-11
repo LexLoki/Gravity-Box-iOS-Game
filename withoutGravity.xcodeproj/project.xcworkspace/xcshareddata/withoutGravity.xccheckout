@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>A8FF306B-1731-4106-A0C0-E3AB00220D1E</string>
+	<key>IDESourceControlProjectName</key>
+	<string>withoutGravity</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>5953562A8F0B5E4C0F5008265CD06F92B558696E</key>
+		<string>https://github.com/LexLoki/Gravity-Box-iOS-Game.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>withoutGravity.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>5953562A8F0B5E4C0F5008265CD06F92B558696E</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/LexLoki/Gravity-Box-iOS-Game.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>5953562A8F0B5E4C0F5008265CD06F92B558696E</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>5953562A8F0B5E4C0F5008265CD06F92B558696E</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Gravity-Box-iOS-Game</string>
+		</dict>
+	</array>
+</dict>
+</plist>

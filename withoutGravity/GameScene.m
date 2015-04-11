@@ -46,6 +46,8 @@ CFTimeInterval timeCount;
 SKSpriteNode *gameNode;
 NSInteger moveCount;
 
+CGFloat xSpacing, ySpacing;
+
 CGFloat barY;
 
 -(void)didMoveToView:(SKView *)view {
@@ -141,15 +143,46 @@ CGFloat barY;
         }
         [gameNode runAction:[SKAction rotateByAngle:direction*M_PI/2 duration:0.5f] completion:^{
             for(SKSpriteNode *box in boxesArray){
+                box.position = [self prepareBoxPosition:box];
                 box.physicsBody.dynamic=true;
             }
         }];
     }
 }
 
+-(CGPoint)prepareBoxPosition:(SKSpriteNode*)box{
+    //CGFloat x = (box.position.x>=0)?1:-1;
+    //CGFloat y = (box.position.y>=0)?1:-1;
+    //[self conver]
+    CGPoint pos = [self convertFromGameNodePoint:box.position];
+    pos = CGPointMake((int)(pos.x/xSpacing)*xSpacing+xSpacing*0.5,
+                      (int)(pos.y/ySpacing)*ySpacing+ySpacing*0.5);
+    pos = [self convertToGameNodePoint:pos];
+    return pos;
+}
+
+
+-(void)prepareForMovement:(NSInteger)direction{
+    //CGVector dir = [self rotateVector:CGVectorMake(1, 0) byAngle:gameNode.zRotation];
+    //box.position = CGPointMake(box.position.x+dir.dx*(-direction), box.position.y+dir.dy*(-direction));
+}
+
+-(CGVector)rotateVector:(CGVector)vector byAngle:(CGFloat)angle{
+    return CGVectorMake(cosf(angle)*vector.dx + sinf(angle)*vector.dy,
+                        -sinf(angle)*vector.dx + cosf(angle)*vector.dy);
+}
+
 -(void)didBeginContact:(SKPhysicsContact *)contact{
-    NSLog(@"HUE");
-    [self setLabel];
+    SKSpriteNode *wall = (SKSpriteNode*)contact.bodyB.node;
+    SKSpriteNode *box = (SKSpriteNode*)contact.bodyA.node;
+    if(wall.physicsBody.categoryBitMask == exitCategory)
+        [self setLabel];
+    else{
+        wall.physicsBody.velocity = CGVectorMake(0, 0);
+        //NSInteger xPos = (wall.position.x - gameNode.frame.origin.x)/xSpacing;
+        //wall.position = CGPointMake(gameNode.frame.origin.x + xPos*xSpacing + xSpacing*0.5, wall.position.y);
+        //box.physicsBody.velocity = CGVectorMake(box.physicsBody.velocity.dx, 0);
+    }
 }
 
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -183,6 +216,9 @@ CGFloat barY;
     x=taxax*quantX;
     y=taxay*quantY;
     
+    xSpacing = taxax;
+    ySpacing = taxay;
+    
     SKTexture *bar = [SKTexture textureWithImageNamed:@"bar"];
     barY = (taxax/bar.size.width)*bar.size.height;
     
@@ -192,6 +228,7 @@ CGFloat barY;
     //gameNode = [[SKSpriteNode alloc]initWithColor:[SKColor blueColor] size:gameRectangle.size];
     //gameNode = [[SKSpriteNode alloc]initWithColor:[SKColor blueColor] size:gameRectangle.size];
     //gameNode = [SKSpriteNode spriteNodeWithImageNamed:@"crateBack"];
+
     gameNode = [SKSpriteNode node];
     [gameNode setSize:gameRectangle.size];
     
@@ -309,18 +346,26 @@ CGFloat barY;
     obj.yScale = obj.xScale;
     //obj.position=CGPointMake(gameRectangle.origin.x+col*taxax+taxax/2, gameRectangle.origin.y-lin*taxay-taxay/2);
     //obj.position=CGPointMake(col*taxax+taxax/2, gameNode.frame.size.height-lin*taxay-taxay/2);
-    obj.position=CGPointMake(col*taxax+taxax/2-gameNode.frame.size.width/2, gameNode.frame.size.height/2-lin*taxay-taxay/2);
+    obj.position=[self convertToGameNodePoint:CGPointMake(col*taxax+taxax/2, lin*taxay+taxay/2)];
+    //obj.position=CGPointMake(col*taxax+taxax/2-gameNode.frame.size.width/2, gameNode.frame.size.height/2-lin*taxay-taxay/2);
     //obj.physicsBody=[SKPhysicsBody bodyWithRectangleOfSize:obj.size];
     obj.physicsBody=[SKPhysicsBody bodyWithTexture:obj.texture size:obj.size];
     obj.physicsBody.mass=1000;
     obj.physicsBody.categoryBitMask=boxCategory;
     obj.physicsBody.collisionBitMask=wallCategory|boxCategory;
-    obj.physicsBody.contactTestBitMask=exitCategory;
+    obj.physicsBody.contactTestBitMask=exitCategory|wallCategory;
     
     [boxesArray addObject:obj];
     [boxesPosArray addObject:[NSValue valueWithCGPoint:obj.position]];
     //[self addChild:obj];
     [gameNode addChild:obj];
+}
+
+-(CGPoint)convertToGameNodePoint:(CGPoint)point{
+    return CGPointMake(point.x-gameNode.size.width*0.5, gameNode.frame.size.height*0.5 - point.y);
+}
+-(CGPoint)convertFromGameNodePoint:(CGPoint)point{
+    return CGPointMake(point.x+gameNode.size.width*0.5, -point.y + gameNode.frame.size.height*0.5);
 }
 
 -(void)readExits:(FILE*)arq
@@ -368,6 +413,8 @@ CGFloat barY;
 }
 
 -(void)resetBoxes{
+    if(gameNode.hasActions)
+        return;
     NSInteger quant = boxesArray.count;
     for(NSInteger i=0;i<quant;i++)
         [boxesArray[i] removeFromParent];
